@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'home.dart'; // Sua tela home aqui
+import 'home.dart';
+import 'cadastro.dart';
+import 'redefinirsenha.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,7 +17,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController senhaController = TextEditingController();
-
   bool _isLoading = false;
 
   Future<void> _login() async {
@@ -25,41 +26,38 @@ class _LoginScreenState extends State<LoginScreen> {
       _isLoading = true;
     });
 
-    final url = Uri.parse('http://localhost:8080/auth/login'); // Ajuste para emulador Android
-    final body = jsonEncode({
-      'email': emailController.text,
-      'senha': senhaController.text,
-    });
+    final String email = emailController.text.trim();
+    final String senha = senhaController.text.trim();
 
     try {
+      // POST para backend, enviando email e senha
+      final url = Uri.parse('http://localhost:8080/auth/login');
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: body,
+        body: jsonEncode({'email': email, 'senha': senha}),
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
-        final token = data['token'] ?? '';
-        final email = emailController.text;
-        final id = data['id']?.toString() ?? '';
+        // Aqui pega apenas o id retornado pelo backend
+        final String id = data['id']?.toString() ?? '';
 
-        if (token.isEmpty) {
+        if (id.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Token não encontrado na resposta.')),
+            const SnackBar(content: Text('Usuário não encontrado ou senha incorreta')),
           );
           setState(() => _isLoading = false);
           return;
         }
 
+        // Salva o id do usuário logado
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('token', token);
-        await prefs.setString('email', email);
         await prefs.setString('id', id);
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login realizado com sucesso! Bem-vindo(a), ${data['nome'] ?? ''}')),
+          const SnackBar(content: Text('Login realizado com sucesso!')),
         );
 
         Navigator.pushReplacement(
@@ -68,11 +66,11 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       } else if (response.statusCode == 401) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Email ou senha incorretos.')),
+          const SnackBar(content: Text('Email ou senha incorretos')),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Falha no login. Tente novamente mais tarde.')),
+          const SnackBar(content: Text('Erro ao realizar login')),
         );
       }
     } catch (e) {
@@ -108,7 +106,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 16),
                   const Text(
                     'Login',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic),
+                    style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        fontStyle: FontStyle.italic),
                   ),
                   const SizedBox(height: 24),
                   TextFormField(
@@ -123,9 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       if (value == null || value.isEmpty) {
                         return 'Por favor, digite seu e-mail';
                       }
-                      if (!value.contains('@')) {
-                        return 'Digite um e-mail válido';
-                      }
+                      if (!value.contains('@')) return 'Digite um e-mail válido';
                       return null;
                     },
                   ),
@@ -165,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/redefinir-senha');
+                      Navigator.pushNamed(context, '/redefinirsenha');
                     },
                     child: const Text('Esqueceu a senha?'),
                   ),

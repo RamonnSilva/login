@@ -1,8 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'formulariodoacao.dart';
 
-class DonationPage extends StatelessWidget {
+class DonationPage extends StatefulWidget {
   const DonationPage({super.key});
+
+  @override
+  State<DonationPage> createState() => _DonationPageState();
+}
+
+class _DonationPageState extends State<DonationPage> {
+  String doadorId = '';
+  String email = '';
+  bool carregando = true;
+
+  @override
+  void initState() {
+    super.initState();
+    carregarUsuario();
+  }
+
+  Future<void> carregarUsuario() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      doadorId = prefs.getString('id') ?? '';
+      email = prefs.getString('email') ?? '';
+      carregando = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,43 +51,26 @@ class DonationPage extends StatelessWidget {
               ),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      _infoCard(
-                        context,
-                        image: 'assets/coracao.png',
-                        texto:
-                            'Ao doar livros, estamos compartilhando o amor pela leitura com os outros.',
-                      ),
+                      _infoCard('assets/coracao.png', 'Doe livros e compartilhe amor!'),
                       const SizedBox(height: 16),
-                      _infoCard(
-                        context,
-                        image: 'assets/livros.png',
-                        texto:
-                            'A doação de livros promove o acesso à educação em comunidades carentes.',
-                        titulo: 'Doações de Livros',
-                      ),
+                      _infoCard('assets/livros.png', 'A doação promove educação.', titulo: 'Doações de Livros'),
                       const SizedBox(height: 16),
                       SizedBox(
                         width: double.infinity,
-                        child: TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const DonationFormPage()),
-                            );
-                          },
-                          style: TextButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.blue[800],
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
+                        child: ElevatedButton(
+                          onPressed: (carregando || doadorId.isEmpty)
+                              ? null
+                              : () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => DonationFormPage(
+                                            doadorId: doadorId, email: email)),
+                                  );
+                                },
                           child: const Text('Doar seu livro'),
                         ),
                       ),
@@ -77,47 +85,28 @@ class DonationPage extends StatelessWidget {
     );
   }
 
-  Widget _infoCard(BuildContext context,
-      {required String image, required String texto, String? titulo}) {
+  Widget _infoCard(String image, String texto, {String? titulo}) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.9),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          )
-        ],
+        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
       ),
       child: Column(
         children: [
           ClipRRect(
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(16)),
-            child: Image.asset(image,
-                height: 150, width: double.infinity, fit: BoxFit.cover),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            child: Image.asset(image, height: 150, width: double.infinity, fit: BoxFit.cover),
           ),
           if (titulo != null)
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                titulo,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              child: Text(titulo, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             ),
           Padding(
             padding: const EdgeInsets.all(12.0),
-            child: Text(
-              texto,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14),
-            ),
+            child: Text(texto, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14)),
           ),
         ],
       ),

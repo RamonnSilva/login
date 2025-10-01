@@ -23,16 +23,11 @@ class HomeScreen extends StatelessWidget {
               children: [
                 _card(
                   image: 'assets/livros.png',
-                  text:
-                      'Que tal fazer uma boa ação e doar aqueles livros que estão pegando poeira na sua estante?',
+                  text: 'Doe livros e compartilhe conhecimento!',
                   buttonText: 'Doar agora',
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const DonationPage(),
-                      ),
-                    );
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => const DonationPage()));
                   },
                 ),
               ],
@@ -63,20 +58,11 @@ class HomeScreen extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            child: Image.asset(
-              image,
-              height: 150,
-              width: double.infinity,
-              fit: BoxFit.cover,
-            ),
+            child: Image.asset(image, height: 150, width: double.infinity, fit: BoxFit.cover),
           ),
           Padding(
             padding: const EdgeInsets.all(12.0),
-            child: Text(
-              text,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14, color: Colors.black87),
-            ),
+            child: Text(text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14)),
           ),
           Padding(
             padding: const EdgeInsets.only(bottom: 12.0),
@@ -84,14 +70,9 @@ class HomeScreen extends StatelessWidget {
               onPressed: onPressed,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue.shade700,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: Text(
-                buttonText,
-                style: const TextStyle(color: Colors.white),
-              ),
+              child: Text(buttonText, style: const TextStyle(color: Colors.white)),
             ),
           ),
         ],
