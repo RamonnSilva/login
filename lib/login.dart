@@ -18,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController senhaController = TextEditingController();
   bool _isLoading = false;
+  bool _obscureText = true;
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
@@ -30,7 +31,6 @@ class _LoginScreenState extends State<LoginScreen> {
     final String senha = senhaController.text.trim();
 
     try {
-      // POST para backend, enviando email e senha
       final url = Uri.parse('http://localhost:8080/auth/login');
       final response = await http.post(
         url,
@@ -40,8 +40,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-
-        // Aqui pega apenas o id retornado pelo backend
         final String id = data['id']?.toString() ?? '';
 
         if (id.isEmpty) {
@@ -52,9 +50,10 @@ class _LoginScreenState extends State<LoginScreen> {
           return;
         }
 
-        // Salva o id do usuário logado
+        // Salvar o id e email do usuário
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('id', id);
+        await prefs.setString('email', email);
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Login realizado com sucesso!')),
@@ -70,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erro ao realizar login')),
+          SnackBar(content: Text('Erro: ${response.body}')),
         );
       }
     } catch (e) {
@@ -82,6 +81,12 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _obscureText = !_obscureText;
+    });
   }
 
   @override
@@ -131,12 +136,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: senhaController,
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.lock),
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.lock),
                       labelText: 'Senha',
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureText ? Icons.visibility_off : Icons.visibility,
+                        ),
+                        onPressed: _togglePasswordVisibility,
+                      ),
                     ),
-                    obscureText: true,
+                    obscureText: _obscureText,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Por favor, digite sua senha';
