@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:login/redefinirsenha.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_web/shared_preferences_web.dart';
 import 'login.dart';
@@ -21,6 +22,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => const LoginScreen(),
         '/cadastro': (context) => const CadastroScreen(),
+        '/redefinirsenha': (context) => const RedefinirSenha()
       },
     );
   }

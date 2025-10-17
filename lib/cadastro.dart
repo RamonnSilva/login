@@ -27,10 +27,133 @@ class _CadastroScreenState extends State<CadastroScreen> {
   final _funcaoController = "USER";
   bool _aceitouTermos = false;
 
+  @override
+  void initState() {
+    super.initState();
+
+    _telefoneController.addListener(() {
+      final textoFormatado = formatarTelefone(_telefoneController.text);
+      if (_telefoneController.text != textoFormatado) {
+        _telefoneController.value = _telefoneController.value.copyWith(
+          text: textoFormatado,
+          selection: TextSelection.collapsed(offset: textoFormatado.length),
+        );
+      }
+    });
+
+    _dataController.addListener(() {
+      final textoFormatado = formatarData(_dataController.text);
+      if (_dataController.text != textoFormatado) {
+        _dataController.value = _dataController.value.copyWith(
+          text: textoFormatado,
+          selection: TextSelection.collapsed(offset: textoFormatado.length),
+        );
+      }
+    });
+
+    _cepController.addListener(() {
+      final textoFormatado = formatarCep(_cepController.text);
+      if (_cepController.text != textoFormatado) {
+        _cepController.value = _cepController.value.copyWith(
+          text: textoFormatado,
+          selection: TextSelection.collapsed(offset: textoFormatado.length),
+        );
+      }
+    });
+
+    // Novo listener para CPF
+    _cpfController.addListener(() {
+      final textoFormatado = formatarCpf(_cpfController.text);
+      if (_cpfController.text != textoFormatado) {
+        _cpfController.value = _cpfController.value.copyWith(
+          text: textoFormatado,
+          selection: TextSelection.collapsed(offset: textoFormatado.length),
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _nomeController.dispose();
+    _dataController.dispose();
+    _cpfController.dispose();
+    _emailController.dispose();
+    _telefoneController.dispose();
+    _senhaController.dispose();
+    _cepController.dispose();
+    _enderecoController.dispose();
+    _cidadeController.dispose();
+    _estadoController.dispose();
+    _logradouroController.dispose();
+    super.dispose();
+  }
+
+  String formatarTelefone(String texto) {
+    var numeros = texto.replaceAll(RegExp(r'\D'), '');
+    if (numeros.length > 11) {
+      numeros = numeros.substring(0, 11);
+    }
+
+    if (numeros.length <= 2) return '($numeros';
+    if (numeros.length <= 7) {
+      return '(${numeros.substring(0, 2)}) ${numeros.substring(2)}';
+    }
+    if (numeros.length <= 11) {
+      return '(${numeros.substring(0, 2)}) ${numeros.substring(2, 7)}-${numeros.substring(7)}';
+    }
+    return texto;
+  }
+
+  String formatarData(String texto) {
+    var numeros = texto.replaceAll(RegExp(r'\D'), '');
+    if (numeros.length > 8) {
+      numeros = numeros.substring(0, 8);
+    }
+
+    if (numeros.length <= 2) return numeros;
+    if (numeros.length <= 4) {
+      return '${numeros.substring(0, 2)}/${numeros.substring(2)}';
+    }
+    if (numeros.length <= 8) {
+      return '${numeros.substring(0, 2)}/${numeros.substring(2, 4)}/${numeros.substring(4)}';
+    }
+    return texto;
+  }
+
+  String formatarCep(String texto) {
+    var numeros = texto.replaceAll(RegExp(r'\D'), '');
+    if (numeros.length > 8) {
+      numeros = numeros.substring(0, 8);
+    }
+    if (numeros.length <= 5) return numeros;
+    return '${numeros.substring(0, 5)}-${numeros.substring(5)}';
+  }
+
+  // Nova função para formatar CPF
+  String formatarCpf(String texto) {
+    var numeros = texto.replaceAll(RegExp(r'\D'), '');
+    if (numeros.length > 11) {
+      numeros = numeros.substring(0, 11);
+    }
+    if (numeros.length <= 3) return numeros;
+    if (numeros.length <= 6) {
+      return '${numeros.substring(0, 3)}.${numeros.substring(3)}';
+    }
+    if (numeros.length <= 9) {
+      return '${numeros.substring(0, 3)}.${numeros.substring(3, 6)}.${numeros.substring(6)}';
+    }
+    if (numeros.length <= 11) {
+      return '${numeros.substring(0, 3)}.${numeros.substring(3, 6)}.${numeros.substring(6, 9)}-${numeros.substring(9)}';
+    }
+    return texto;
+  }
+
   Future<void> _buscarCep(String cep) async {
     final cleanCep = cep.replaceAll(RegExp(r'\D'), '');
     if (cleanCep.length == 8) {
-      final response = await http.get(Uri.parse('https://viacep.com.br/ws/$cleanCep/json/'));
+      final response =
+          await http.get(Uri.parse('https://viacep.com.br/ws/$cleanCep/json/'));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['erro'] == null) {
@@ -78,10 +201,13 @@ class _CadastroScreenState extends State<CadastroScreen> {
       "email": _emailController.text,
       "senha": _senhaController.text,
       "cpf": _cpfController.text,
-      "cep": _cepController.text,
       "telefone": _telefoneController.text,
+      "cep": _cepController.text,
+      "endereco": _enderecoController.text,
+      "cidade": _cidadeController.text,
+      "estado": _estadoController.text,
       "logradouro": _logradouroController.text,
-      "funcao" : _funcaoController,
+      "funcao": _funcaoController,
     };
 
     try {
@@ -126,49 +252,112 @@ class _CadastroScreenState extends State<CadastroScreen> {
                 children: [
                   Image.asset('assets/logo.png', height: 100),
                   const SizedBox(height: 20),
-                  const Text('Cadastro', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Cadastro',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 20),
-
-                  _campoTexto(controller: _nomeController, label: 'Nome completo', icon: FontAwesomeIcons.user, validator: _validaTexto),
-                  _campoTexto(controller: _dataController, label: 'Data de nascimento', icon: FontAwesomeIcons.calendar, inputType: TextInputType.datetime, validator: (value) {
-                    if (value == null || value.isEmpty) return 'Informe a data de nascimento';
-                    if (!_maiorDeIdade(value)) return 'Você precisa ter 18 anos ou mais';
-                    return null;
-                  }),
-                  _campoTexto(controller: _cpfController, label: 'CPF', icon: FontAwesomeIcons.idCard, validator: (value) {
-                    if (value == null || value.length < 11) return 'CPF inválido';
-                    return null;
-                  }),
-                  _campoTexto(controller: _emailController, label: 'Email', icon: FontAwesomeIcons.envelope, inputType: TextInputType.emailAddress, validator: (value) {
-                    if (value == null || !value.contains('@')) return 'Email inválido';
-                    return null;
-                  }),
-                  _campoTexto(controller: _telefoneController, label: 'Telefone', icon: FontAwesomeIcons.phone, inputType: TextInputType.phone, validator: _validaTexto),
-                  _campoTexto(controller: _senhaController, label: 'Senha', icon: FontAwesomeIcons.lock, obscure: true, validator: (value) {
-                    if (value == null || value.length < 6) return 'Senha muito curta';
-                    return null;
-                  }),
-
-                  _campoTexto(controller: _cepController, label: 'CEP', icon: FontAwesomeIcons.mapPin, validator: _validaTexto, onChanged: _buscarCep),
-                  _campoTexto(controller: _enderecoController, label: 'Endereço', icon: FontAwesomeIcons.road, enabled: false),
-                  _campoTexto(controller: _cidadeController, label: 'Cidade', icon: FontAwesomeIcons.city, enabled: false),
-                  _campoTexto(controller: _estadoController, label: 'Estado', icon: FontAwesomeIcons.flag, enabled: false),
-
-                 
+                  _campoTexto(
+                    controller: _nomeController,
+                    label: 'Nome completo',
+                    icon: FontAwesomeIcons.user,
+                    validator: _validaTexto,
+                  ),
+                  _campoTexto(
+                    controller: _dataController,
+                    label: 'Data de nascimento',
+                    icon: FontAwesomeIcons.calendar,
+                    inputType: TextInputType.datetime,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Informe a data de nascimento';
+                      }
+                      if (!_maiorDeIdade(value)) {
+                        return 'Você precisa ter 18 anos ou mais';
+                      }
+                      return null;
+                    },
+                  ),
+                  _campoTexto(
+                    controller: _cpfController,
+                    label: 'CPF',
+                    icon: FontAwesomeIcons.idCard,
+                    validator: (value) {
+                      if (value == null || value.replaceAll(RegExp(r'\D'), '').length != 11) {
+                        return 'CPF inválido';
+                      }
+                      return null;
+                    },
+                  ),
+                  _campoTexto(
+                    controller: _emailController,
+                    label: 'Email',
+                    icon: FontAwesomeIcons.envelope,
+                    inputType: TextInputType.emailAddress,
+                    validator: (value) {
+                      if (value == null || !value.contains('@')) {
+                        return 'Email inválido';
+                      }
+                      return null;
+                    },
+                  ),
+                  _campoTexto(
+                    controller: _telefoneController,
+                    label: 'Telefone',
+                    icon: FontAwesomeIcons.phone,
+                    inputType: TextInputType.phone,
+                    validator: _validaTexto,
+                  ),
+                  _campoTexto(
+                    controller: _senhaController,
+                    label: 'Senha',
+                    icon: FontAwesomeIcons.lock,
+                    obscure: true,
+                    validator: (value) {
+                      if (value == null || value.length < 6) {
+                        return 'Senha muito curta';
+                      }
+                      return null;
+                    },
+                  ),
+                  _campoTexto(
+                    controller: _cepController,
+                    label: 'CEP',
+                    icon: FontAwesomeIcons.mapPin,
+                    validator: _validaTexto,
+                    onChanged: _buscarCep,
+                  ),
+                  _campoTexto(
+                    controller: _enderecoController,
+                    label: 'Endereço',
+                    icon: FontAwesomeIcons.road,
+                    readOnly: true,
+                  ),
+                  _campoTexto(
+                    controller: _cidadeController,
+                    label: 'Cidade',
+                    icon: FontAwesomeIcons.city,
+                    readOnly: true,
+                  ),
+                  _campoTexto(
+                    controller: _estadoController,
+                    label: 'Estado',
+                    icon: FontAwesomeIcons.flag,
+                    readOnly: true,
+                  ),
                   _campoTexto(
                     controller: _logradouroController,
                     label: 'Número da casa',
                     icon: FontAwesomeIcons.houseChimney,
                     validator: _validaTexto,
                   ),
-
                   CheckboxListTile(
                     title: const Text('Aceito os termos de uso'),
                     value: _aceitouTermos,
-                    onChanged: (value) => setState(() => _aceitouTermos = value ?? false),
+                    onChanged: (value) =>
+                        setState(() => _aceitouTermos = value ?? false),
                   ),
                   const SizedBox(height: 10),
-
                   ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate() && _aceitouTermos) {
@@ -180,8 +369,8 @@ class _CadastroScreenState extends State<CadastroScreen> {
                     child: const Text('Cadastrar'),
                   ),
                   TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Já tem conta? Voltar para login'),
+                  onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
+                  child: const Text('Já tem conta? Voltar para login'),
                   ),
                 ],
               ),
@@ -192,8 +381,10 @@ class _CadastroScreenState extends State<CadastroScreen> {
     );
   }
 
-  String? _validaTexto(String? value) {
-    if (value == null || value.isEmpty) return 'Campo obrigatório';
+  String? _validaTexto(String? texto) {
+    if (texto == null || texto.isEmpty) {
+      return 'Campo obrigatório';
+    }
     return null;
   }
 
@@ -201,27 +392,25 @@ class _CadastroScreenState extends State<CadastroScreen> {
     required TextEditingController controller,
     required String label,
     required IconData icon,
-    bool obscure = false,
-    TextInputType inputType = TextInputType.text,
     String? Function(String?)? validator,
+    TextInputType inputType = TextInputType.text,
+    bool obscure = false,
+    bool readOnly = false,
     Function(String)? onChanged,
-    bool enabled = true,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: TextFormField(
         controller: controller,
-        obscureText: obscure,
-        enabled: enabled,
         keyboardType: inputType,
+        obscureText: obscure,
+        readOnly: readOnly,
         validator: validator,
         onChanged: onChanged,
         decoration: InputDecoration(
-          prefixIcon: FaIcon(icon),
           labelText: label,
+          prefixIcon: Icon(icon),
           border: const OutlineInputBorder(),
-          filled: true,
-          fillColor: Colors.white,
         ),
       ),
     );
