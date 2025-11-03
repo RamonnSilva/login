@@ -6,8 +6,8 @@ import 'login.dart';
 import 'cadastro.dart';
 
 void main() async {
-  await SharedPreferences.getInstance(); // Inicializa o plugin
-   // Configura valores iniciais simulados
+  await SharedPreferences.getInstance(); 
+   
   runApp(const MyApp());
 }
 

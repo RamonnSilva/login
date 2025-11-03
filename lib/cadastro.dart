@@ -61,7 +61,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
       }
     });
 
-    // Novo listener para CPF
+    
     _cpfController.addListener(() {
       final textoFormatado = formatarCpf(_cpfController.text);
       if (_cpfController.text != textoFormatado) {
@@ -130,7 +130,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
     return '${numeros.substring(0, 5)}-${numeros.substring(5)}';
   }
 
-  // Nova função para formatar CPF
+  
   String formatarCpf(String texto) {
     var numeros = texto.replaceAll(RegExp(r'\D'), '');
     if (numeros.length > 11) {

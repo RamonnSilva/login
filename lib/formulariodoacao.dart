@@ -29,10 +29,10 @@ class _DonationFormPageState extends State<DonationFormPage> {
   @override
   void initState() {
     super.initState();
-    nome = ''; // você pode preencher com o nome do usuário logado, se quiser
+    nome = ''; 
   }
 
-  // Selecionar imagem da galeria
+  
   Future<void> pickImage() async {
     final picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
@@ -41,13 +41,13 @@ class _DonationFormPageState extends State<DonationFormPage> {
       final bytes = await image.readAsBytes();
       setState(() {
         pickedImage = image;
-        // Converte a imagem em Base64 com prefixo data:image/png;base64,
+        
         imagemBase64 = "data:image/png;base64,${base64Encode(bytes)}";
       });
     }
   }
 
-  // Enviar dados para o backend
+  
   Future<void> enviarDados() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -74,11 +74,11 @@ class _DonationFormPageState extends State<DonationFormPage> {
         'autor': autor,
         'descricao': descricao,
         'email': widget.email,
-        'imagem': imagemBase64, // imagem em Base64 completa
-        'doadorid': doadorIdInt, // id do usuário logado
+        'imagem': imagemBase64, 
+        'doadorid': doadorIdInt, 
       };
 
-      print('Payload enviado: $payload'); // para debug
+      print('Payload enviado: $payload'); 
 
       final response = await http.post(
         url,

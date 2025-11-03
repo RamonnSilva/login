@@ -50,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
           return;
         }
 
-        // Salvar o id e email do usuário
+        
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('id', id);
         await prefs.setString('email', email);
